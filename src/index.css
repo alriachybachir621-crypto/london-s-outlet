@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-primary: #111111;
+    --color-charcoal: #2B2B2B;
+    --color-canvas: #F5F3EF;
+    --color-accent: #C8312B;
+    --color-navy: #1C2A52;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: #F5F3EF;
+    color: #111111;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', 'Cairo', system-ui, -apple-system, sans-serif;
+    background-color: #F5F3EF;
+    color: #111111;
+    overflow-x: hidden;
+  }
+
+  html[dir='rtl'] body {
+    font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+}
+
+.font-display {
+  font-family: 'Oswald', 'Cairo', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+html[dir='rtl'] .font-display {
+  font-family: 'Cairo', 'Oswald', sans-serif;
+  letter-spacing: 0;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.union-jack-stripe {
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #1C2A52 0%,
+    #1C2A52 38%,
+    #F5F3EF 38%,
+    #F5F3EF 43%,
+    #C8312B 43%,
+    #C8312B 57%,
+    #F5F3EF 57%,
+    #F5F3EF 62%,
+    #1C2A52 62%,
+    #1C2A52 100%
+  );
+}

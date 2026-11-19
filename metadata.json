@@ -1,0 +1,6 @@
+{
+  "name": "London's Outlet",
+  "description": "Urban European streetwear, denim, sneakers, and caps in Zahle, Lebanon — The Latest in European Fashion.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Clothing, footwear, cap, or accessory item sold in London's Outlet.",
+      "type": "object",
+      "properties": {
+        "nameEn": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "nameAr": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "brand": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "category": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "priceUsd": { "type": "number" },
+        "oldPriceUsd": { "type": "number" },
+        "sizes": { "type": "array", "description": "Available sizes (up to 20)." },
+        "colors": { "type": "array", "description": "Available colors (up to 15)." },
+        "images": { "type": "array", "description": "Product image URLs (up to 8)." },
+        "inStock": { "type": "boolean" },
+        "isNew": { "type": "boolean" },
+        "isSale": { "type": "boolean" },
+        "descriptionEn": { "type": "string", "maxLength": 1000 },
+        "descriptionAr": { "type": "string", "maxLength": 1000 },
+        "sortOrder": { "type": "number" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": [
+        "nameEn",
+        "nameAr",
+        "brand",
+        "category",
+        "priceUsd",
+        "sizes",
+        "colors",
+        "images",
+        "inStock",
+        "isNew",
+        "isSale"
+      ]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Storefront product category card.",
+      "type": "object",
+      "properties": {
+        "nameEn": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "nameAr": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "image": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "sortOrder": { "type": "number" }
+      },
+      "required": ["nameEn", "nameAr", "image", "sortOrder"]
+    },
+    "Brand": {
+      "title": "Brand",
+      "description": "Featured European or urban streetwear brand.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "sortOrder": { "type": "number" }
+      },
+      "required": ["name", "sortOrder"]
+    },
+    "StoreInfo": {
+      "title": "StoreInfo",
+      "description": "Shop configuration, hero images, contact details, hours, map embed, and gallery.",
+      "type": "object",
+      "properties": {
+        "heroImages": { "type": "array", "description": "Hero banner image URLs (up to 8)." },
+        "heroTitleEn": { "type": "string", "maxLength": 120 },
+        "heroTitleAr": { "type": "string", "maxLength": 120 },
+        "heroSubtitleEn": { "type": "string", "maxLength": 200 },
+        "heroSubtitleAr": { "type": "string", "maxLength": 200 },
+        "aboutEn": { "type": "string", "maxLength": 1500 },
+        "aboutAr": { "type": "string", "maxLength": 1500 },
+        "addressEn": { "type": "string", "maxLength": 200 },
+        "addressAr": { "type": "string", "maxLength": 200 },
+        "hoursEn": { "type": "string", "maxLength": 200 },
+        "hoursAr": { "type": "string", "maxLength": 200 },
+        "whatsappNumber": { "type": "string", "maxLength": 30 },
+        "phoneDisplay": { "type": "string", "maxLength": 30 },
+        "facebookUrl": { "type": "string", "maxLength": 500 },
+        "mapsEmbedUrl": { "type": "string", "maxLength": 1000 },
+        "mapsLinkUrl": { "type": "string", "maxLength": 1000 },
+        "galleryImages": { "type": "array", "description": "Gallery photo URLs (up to 16)." },
+        "codeConfigured": { "type": "boolean" },
+        "catalogSeeded": { "type": "boolean" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": [
+        "heroImages",
+        "heroTitleEn",
+        "heroTitleAr",
+        "heroSubtitleEn",
+        "heroSubtitleAr",
+        "aboutEn",
+        "aboutAr",
+        "addressEn",
+        "addressAr",
+        "hoursEn",
+        "hoursAr",
+        "whatsappNumber",
+        "phoneDisplay",
+        "facebookUrl",
+        "mapsEmbedUrl",
+        "mapsLinkUrl",
+        "galleryImages"
+      ]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Catalog products publicly readable, writable only by admin@londonsoutlet.app."
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Product categories publicly readable, writable only by admin@londonsoutlet.app."
+    },
+    "/brands/{brandId}": {
+      "schema": { "$ref": "#/entities/Brand" },
+      "description": "Brands strip items publicly readable, writable only by admin@londonsoutlet.app."
+    },
+    "/store/{docId}": {
+      "schema": { "$ref": "#/entities/StoreInfo" },
+      "description": "Store info and hero configuration publicly readable, writable only by admin@londonsoutlet.app."
+    }
+  }
+}

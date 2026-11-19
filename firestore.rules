@@ -1,0 +1,171 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Shared helpers
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isStoreAdmin() {
+      return request.auth != null && request.auth.token.email == 'admin@londonsoutlet.app';
+    }
+
+    function isOptionalString(data, key, maxLen) {
+      return !(key in data) || (data[key] is string && data[key].size() <= maxLen);
+    }
+
+    function isOptionalNumber(data, key, minVal) {
+      return !(key in data) || data[key] == null || (data[key] is number && data[key] >= minVal);
+    }
+
+    function isBoundedStringArray(arr, maxLen, itemMaxLen) {
+      return arr is list
+        && arr.size() <= maxLen
+        && (arr.size() == 0 || (arr[0] is string && arr[0].size() <= itemMaxLen));
+    }
+
+    // Validation blueprints
+    function isValidProduct(data) {
+      return data.keys().hasAll([
+          'nameEn', 'nameAr', 'brand', 'category', 'priceUsd',
+          'sizes', 'colors', 'images', 'inStock', 'isNew', 'isSale'
+        ])
+        && data.keys().hasOnly([
+          'nameEn', 'nameAr', 'brand', 'category', 'priceUsd', 'oldPriceUsd',
+          'sizes', 'colors', 'images', 'inStock', 'isNew', 'isSale',
+          'descriptionEn', 'descriptionAr', 'sortOrder', 'createdAt', 'updatedAt'
+        ])
+        && data.nameEn is string && data.nameEn.size() >= 1 && data.nameEn.size() <= 120
+        && data.nameAr is string && data.nameAr.size() >= 1 && data.nameAr.size() <= 120
+        && data.brand is string && data.brand.size() >= 1 && data.brand.size() <= 60
+        && data.category is string && data.category.size() >= 1 && data.category.size() <= 60
+        && data.priceUsd is number && data.priceUsd >= 0 && data.priceUsd <= 100000
+        && isOptionalNumber(data, 'oldPriceUsd', 0)
+        && isBoundedStringArray(data.sizes, 20, 30)
+        && isBoundedStringArray(data.colors, 15, 40)
+        && isBoundedStringArray(data.images, 8, 150000)
+        && data.inStock is bool
+        && data.isNew is bool
+        && data.isSale is bool
+        && isOptionalString(data, 'descriptionEn', 1000)
+        && isOptionalString(data, 'descriptionAr', 1000)
+        && isOptionalNumber(data, 'sortOrder', -10000)
+        && isOptionalNumber(data, 'createdAt', 0)
+        && isOptionalNumber(data, 'updatedAt', 0);
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['nameEn', 'nameAr', 'image', 'sortOrder'])
+        && data.keys().hasOnly(['nameEn', 'nameAr', 'image', 'sortOrder'])
+        && data.nameEn is string && data.nameEn.size() >= 1 && data.nameEn.size() <= 60
+        && data.nameAr is string && data.nameAr.size() >= 1 && data.nameAr.size() <= 60
+        && data.image is string && data.image.size() >= 1 && data.image.size() <= 150000
+        && data.sortOrder is number && data.sortOrder >= -1000 && data.sortOrder <= 10000;
+    }
+
+    function isValidBrand(data) {
+      return data.keys().hasAll(['name', 'sortOrder'])
+        && data.keys().hasOnly(['name', 'sortOrder'])
+        && data.name is string && data.name.size() >= 1 && data.name.size() <= 60
+        && data.sortOrder is number && data.sortOrder >= -1000 && data.sortOrder <= 10000;
+    }
+
+    function isValidStoreInfo(data) {
+      return data.keys().hasAll([
+          'heroImages', 'heroTitleEn', 'heroTitleAr', 'heroSubtitleEn', 'heroSubtitleAr',
+          'aboutEn', 'aboutAr', 'addressEn', 'addressAr', 'hoursEn', 'hoursAr',
+          'whatsappNumber', 'phoneDisplay', 'facebookUrl', 'mapsEmbedUrl', 'mapsLinkUrl',
+          'galleryImages'
+        ])
+        && data.keys().hasOnly([
+          'heroImages', 'heroTitleEn', 'heroTitleAr', 'heroSubtitleEn', 'heroSubtitleAr',
+          'aboutEn', 'aboutAr', 'addressEn', 'addressAr', 'hoursEn', 'hoursAr',
+          'whatsappNumber', 'phoneDisplay', 'facebookUrl', 'mapsEmbedUrl', 'mapsLinkUrl',
+          'galleryImages', 'codeConfigured', 'catalogSeeded', 'updatedAt'
+        ])
+        && isBoundedStringArray(data.heroImages, 8, 150000)
+        && data.heroTitleEn is string && data.heroTitleEn.size() <= 120
+        && data.heroTitleAr is string && data.heroTitleAr.size() <= 120
+        && data.heroSubtitleEn is string && data.heroSubtitleEn.size() <= 200
+        && data.heroSubtitleAr is string && data.heroSubtitleAr.size() <= 200
+        && data.aboutEn is string && data.aboutEn.size() <= 1500
+        && data.aboutAr is string && data.aboutAr.size() <= 1500
+        && data.addressEn is string && data.addressEn.size() <= 200
+        && data.addressAr is string && data.addressAr.size() <= 200
+        && data.hoursEn is string && data.hoursEn.size() <= 200
+        && data.hoursAr is string && data.hoursAr.size() <= 200
+        && data.whatsappNumber is string && data.whatsappNumber.size() <= 30
+        && data.phoneDisplay is string && data.phoneDisplay.size() <= 30
+        && data.facebookUrl is string && data.facebookUrl.size() <= 500
+        && data.mapsEmbedUrl is string && data.mapsEmbedUrl.size() <= 1000
+        && data.mapsLinkUrl is string && data.mapsLinkUrl.size() <= 1000
+        && isBoundedStringArray(data.galleryImages, 16, 150000)
+        && (!('codeConfigured' in data) || data.codeConfigured is bool)
+        && (!('catalogSeeded' in data) || data.catalogSeeded is bool)
+        && isOptionalNumber(data, 'updatedAt', 0);
+    }
+
+    // Products collection
+    match /products/{productId} {
+      allow get: if isValidId(productId);
+      allow list: if true;
+      allow create: if isStoreAdmin() && isValidId(productId) && isValidProduct(incoming());
+      allow update: if isStoreAdmin() && isValidId(productId) && isValidProduct(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'nameEn', 'nameAr', 'brand', 'category', 'priceUsd', 'oldPriceUsd',
+          'sizes', 'colors', 'images', 'inStock', 'isNew', 'isSale',
+          'descriptionEn', 'descriptionAr', 'sortOrder', 'updatedAt'
+        ]);
+      allow delete: if isStoreAdmin() && isValidId(productId);
+    }
+
+    // Categories collection
+    match /categories/{categoryId} {
+      allow get: if isValidId(categoryId);
+      allow list: if true;
+      allow create: if isStoreAdmin() && isValidId(categoryId) && isValidCategory(incoming());
+      allow update: if isStoreAdmin() && isValidId(categoryId) && isValidCategory(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['nameEn', 'nameAr', 'image', 'sortOrder']);
+      allow delete: if isStoreAdmin() && isValidId(categoryId);
+    }
+
+    // Brands collection
+    match /brands/{brandId} {
+      allow get: if isValidId(brandId);
+      allow list: if true;
+      allow create: if isStoreAdmin() && isValidId(brandId) && isValidBrand(incoming());
+      allow update: if isStoreAdmin() && isValidId(brandId) && isValidBrand(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'sortOrder']);
+      allow delete: if isStoreAdmin() && isValidId(brandId);
+    }
+
+    // Store configuration & hero/about/gallery info
+    match /store/{docId} {
+      allow get: if isValidId(docId);
+      allow list: if false;
+      allow create: if isStoreAdmin() && isValidId(docId) && isValidStoreInfo(incoming());
+      allow update: if isStoreAdmin() && isValidId(docId) && isValidStoreInfo(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'heroImages', 'heroTitleEn', 'heroTitleAr', 'heroSubtitleEn', 'heroSubtitleAr',
+          'aboutEn', 'aboutAr', 'addressEn', 'addressAr', 'hoursEn', 'hoursAr',
+          'whatsappNumber', 'phoneDisplay', 'facebookUrl', 'mapsEmbedUrl', 'mapsLinkUrl',
+          'galleryImages', 'codeConfigured', 'catalogSeeded', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+  }
+}
